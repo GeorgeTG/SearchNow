@@ -112,7 +112,7 @@ namespace SearchNow {
         private string ParseQuery(string query) {
             if (String.IsNullOrEmpty(query))
                 return query;
-            Match match = Regex.Match(query, @"\?e=([a-z A-Z]+):([\s\S]*)");
+            Match match = Regex.Match(query, @"\?e=([a-z A-Z]+):([\s\S]*);");
             if (match.Success) {
                 //e is specified
                 string shortcut = match.Groups[1].Value;
