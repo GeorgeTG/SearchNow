@@ -43,6 +43,9 @@ Ctrl+Alt+F - open/focus/close search box
  
 #Engine definitions
 ---
+
+Example definitions file:
+(I think this is pretty much self-explanatory)
 ```xml
 <EngineDescriptions>
 	<Engine>
