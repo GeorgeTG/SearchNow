@@ -6,21 +6,20 @@ There's some serious cleanup to be done to the source so bear with me.
 ---
 
 #Usage
----
 
 + Hot Keys
 
-Ctrl+Alt+F - open/focus/close search box
+	Ctrl+Alt+F - open/focus/close search box
 
 + Queries
 
-|Input                 | Effect                                            |
-| -----------------    | :-----------------------------------------------: |
-| `plaintext`          | Search with the default selected engine           |
-| `?e=shortcut:query;` | Search query with the specified engine            |
-| `?d=shortcut;`       | Set default engine                                |
-| `r=myfile.xml;`      | Load search engine definitions from myfile.xml    |
-| `c=x;`               | Exit                                              |
+	|Input                 | Effect                                            |
+	| -----------------    | :-----------------------------------------------: |
+	| `plaintext`          | Search with the default engine                    |
+	| `?e=shortcut:query;` | Search for 'query' with the specified engine      |
+	| `?d=shortcut;`       | Set engine with 'shortcut' as default             |
+	| `r=myfile.xml;`      | Load search engine definitions from 'myfile.xml'  |
+	| `c=x;`               | Exit                                              |
 
 ---
 ###Examples:
