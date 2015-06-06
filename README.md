@@ -1,5 +1,6 @@
 # SearchNow
 Multi-purpose windows search bar developed with wpf .NET 4.5.
+
 I am still testing this software.
 There's some serious cleanup to be done to the source so bear with me.
 
@@ -9,7 +10,7 @@ There's some serious cleanup to be done to the source so bear with me.
 
 + Hot Keys
 
-	Ctrl+Alt+F - open/focus/close search box
+	`Ctrl+Alt+F` - open/focus/close search box
 
 + Queries
 
@@ -22,7 +23,8 @@ There's some serious cleanup to be done to the source so bear with me.
 	| `c=x;`               | Exit                                              |
 
 ---
-###Examples:
+
+#Examples:
 + `myquerytosearch` - Search for 'myquerytosearch' using the default engine. (plaintext search)
 + `?e=y:rickroll;` - Search for 'rickroll' using the search engine that has 'y' as shortcut.
 + `?d=y;` - Set the search engine that has 'y' as shortcut, as default.
@@ -40,8 +42,9 @@ There's some serious cleanup to be done to the source so bear with me.
 >search for 'whatever' using the engine with 'y' as shortcut, and then use the default engine
 >('g' that we just set) to search for 'plaintext'
  
+ ---
+ 
 #Engine definitions
----
 
 Example definitions file:
 (I think this is pretty much self-explanatory)
