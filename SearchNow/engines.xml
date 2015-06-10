@@ -1,0 +1,27 @@
+<EngineDescriptions>
+	<Engine>
+		<Name>Youtube</Name>
+		<Shortcut>y</Shortcut>
+		<Query>https://www.youtube.com/results?search_query={0}</Query>
+	</Engine>
+	<Engine>
+		<Name>Google</Name>
+		<Shortcut>g</Shortcut>
+		<Query>https://www.google.gr/#q={0}</Query>
+	</Engine>
+	<Engine>
+		<Name>Windows Explorer</Name>
+		<Shortcut>ws</Shortcut>
+		<Query>search-ms:query={0}&amp;</Query>
+	</Engine>
+	<Engine>
+		<Name>Wikipedia</Name>
+		<Shortcut>w</Shortcut>
+		<Query>https://en.wikipedia.org/w/index.php?search={0}</Query>
+	</Engine>
+	<Engine>
+		<Name>Urban Dictionary</Name>
+		<Shortcut>u</Shortcut>
+		<Query>http://www.urbandictionary.com/define.php?term={0}</Query>
+	</Engine>
+</EngineDescriptions>

@@ -4,10 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+
+using System.Diagnostics;
 using System.Threading.Tasks;
+
 using System.Windows;
+using System.IO;
+
 using System.Web;
-using System.Net;
+using System.Net.NetworkInformation;
+
 
 namespace SearchNow {
     class SearchEngine{
@@ -19,37 +25,68 @@ namespace SearchNow {
     class SearchEngines {
         private List<SearchEngine> engines_collection;
         private Dictionary<string, string> name_from_shortcut, query_from_name;
-        private string selected_engine;
+        private string selected_engine, loaded_file;
+        private bool definitions_loaded = false;
+        private InformationWindow info_window;
 
 
         public SearchEngines(string file) {
+            info_window = new InformationWindow();
+            LoadDefinitionsFile(file);
+        }
+
+        /// <summary>
+        /// Initialize with the default file
+        /// </summary>
+        public SearchEngines() {
+            info_window = new InformationWindow();
+            string default_file = (string)Properties.Settings.Default["default_definitions_file"];
+            if (!File.Exists(default_file)) {
+                File.WriteAllText(default_file, Properties.Resources.engines); //extract the default file.
+            }
+            LoadDefinitionsFile(default_file);
+        }
+
+        private void LoadDefinitionsFile(string file) {
             ParseEngines(file);
-            LoadDefault();
+            if (definitions_loaded) {
+                LoadDefault();
+                loaded_file = file;
+            }
         }
 
         private void ParseEngines(string file) {
             engines_collection = new List<SearchEngine>();
 
-            //TODO: try
-            XDocument xml = XDocument.Load(file);
-            var query =
-                from engine in xml.Descendants("Engine")
-                select new SearchEngine{
-                    Name = engine.Element("Name").Value,
-                    Shortcut = engine.Element("Shortcut").Value,
-                    Query = engine.Element("Query").Value
-                };
-            engines_collection = query.ToList();
-
+            try {
+                XDocument xml = XDocument.Load(file);
+                var query =
+                    from engine in xml.Descendants("Engine")
+                    select new SearchEngine {
+                        Name = engine.Element("Name").Value,
+                        Shortcut = engine.Element("Shortcut").Value,
+                        Query = engine.Element("Query").Value
+                    };
+                engines_collection = query.ToList();
+            } catch (Exception ex) {
+                engines_collection = new List<SearchEngine>();
+                InformUser(ex.Message, MessageType.Error);
+            }
 
             name_from_shortcut = new Dictionary<string, string>();
             query_from_name = new Dictionary<string, string>();
+
+            if(engines_collection.Count == 0) {
+                //Nothing was loaded.
+                definitions_loaded = false;
+                return;
+            }
 
             foreach (SearchEngine engine in engines_collection) {
                 query_from_name.Add(engine.Name, engine.Query);
                 name_from_shortcut.Add(engine.Shortcut, engine.Name);
             }
-
+            definitions_loaded = true;
         }
 
         private string CheckQueryForCommand(string query) {
@@ -61,9 +98,15 @@ namespace SearchNow {
                 query = query.Replace(match_text, "");
                 if (command.Equals("x")) {
                     Application.Current.Shutdown();
-                }
-
-                
+                } else if (command.Equals("r")) {
+                    if (!String.IsNullOrEmpty(loaded_file)) {
+                        //We have a stored loaded file. Try to reload
+                        LoadDefinitionsFile(loaded_file);
+                    } else {
+                        //No file to reload
+                        InformUser("No file loaded. Cannot reload.", MessageType.Error);
+                    }
+                }         
             }
             return query;
         }
@@ -71,25 +114,13 @@ namespace SearchNow {
         private string CheckQueryForConfig(string query) {
             Match match = Regex.Match(query, @"\?l=([^<>:"" /\\\|\?\*]+.xml);");
             if (match.Success) {
-                //reload was requested
+                //load was requested
                 string text = match.Groups[0].Value;
                 string file = match.Groups[1].Value;
-                
-                ParseEngines(file);
-                LoadDefault();
-                query = query.Replace(text, "");
-            }
-            /*
-            match = Regex.Match(query, @"\?v=([0-9]{1,3});");
-            if (match.Success) {
-                //reload was requested
-                string text = match.Groups[0].Value;
-                int volume = Convert.ToInt32(match.Groups[1].Value);
 
-                Audio.Volume = volume;
+                LoadDefinitionsFile(file);
                 query = query.Replace(text, "");
             }
-            */
 
             match = Regex.Match(query, @"\?d=([a-z A-Z]+)\;");
             if (match.Success) {
@@ -97,10 +128,11 @@ namespace SearchNow {
                 string shortcut = match.Groups[1].Value;
                 if (name_from_shortcut.ContainsKey(shortcut)) {
                     //Shortcut is assigned to an engine
-                    selected_engine = name_from_shortcut[shortcut];
+                    SetDefault(name_from_shortcut[shortcut]);
+                    InformUser("Default engine changed.", MessageType.Info);
                 } else {
                     //Invalid shortcut!!
-                    MessageBox.Show("invalid shortcut!");
+                    InformUser("Invalid shortcut! Cannot set default engine.", MessageType.Error);
                 }
                 return query.Replace(match_text, "");
             }
@@ -122,8 +154,7 @@ namespace SearchNow {
                     DoSearch(name_from_shortcut[shortcut], text);
                 } else {
                     //Wrong engine shortcut
-                    MessageBox.Show("Specified engine not found: " + shortcut);
-
+                    InformUser(String.Format("Specified engine [{0}] not found!" , shortcut), MessageType.Error);
                     DoSearch(selected_engine, text);
                     return query;
                 }
@@ -141,17 +172,17 @@ namespace SearchNow {
                 uri = string.Format(engine_query, HttpUtility.UrlEncode(query));
 
                 //Check if link is valid
-                WebRequest request = WebRequest.Create(uri);
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                response.Close();
-                if (!(response == null || response.StatusCode != HttpStatusCode.OK)) {
-                    System.Diagnostics.Process.Start(uri);
+                Ping ping = new Ping();
+                Uri to_check = new Uri(uri);
+                PingReply result = ping.Send(to_check.Host);
+                if (result.Status != IPStatus.Success) {
+                    InformUser("Connection error, or invalid search engine definitions!", MessageType.Warn);
                 } else {
-                    MessageBox.Show("Connection error, or invalid search engine description!");
+                    Process.Start(uri);
                 }
             } else {
                 uri= string.Format(engine_query, query);
-                System.Diagnostics.Process.Start(uri);
+                Process.Start(uri);
             }
            
         }
@@ -170,12 +201,22 @@ namespace SearchNow {
             }
         }
 
+        private void InformUser(string info, MessageType type) {
+            info_window.AddMessage(new InformationMessage(info, type));
+        }
+
         /// <summary>
         /// Performs a search based on given query.
         /// </summary>
         /// <param name="query"></param>
         public string Search(string query) {
-            return ParseQuery(CheckQueryForConfig(CheckQueryForCommand(query)));
+            if (definitions_loaded) {
+                return ParseQuery(CheckQueryForConfig(CheckQueryForCommand(query)));
+            } else {
+                InformUser("There aren't any search engine definitions loaded.\n" +
+                            "Consider loading an xml file using ?r=file.xml;", MessageType.Warn);
+                return CheckQueryForConfig(CheckQueryForCommand(query));
+            }
         }
 
 
