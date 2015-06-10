@@ -61,6 +61,34 @@ namespace SearchNow.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &lt;EngineDescriptions&gt;
+        ///	&lt;Engine&gt;
+        ///		&lt;Name&gt;Youtube&lt;/Name&gt;
+        ///		&lt;Shortcut&gt;y&lt;/Shortcut&gt;
+        ///		&lt;Query&gt;https://www.youtube.com/results?search_query={0}&lt;/Query&gt;
+        ///	&lt;/Engine&gt;
+        ///	&lt;Engine&gt;
+        ///		&lt;Name&gt;Google&lt;/Name&gt;
+        ///		&lt;Shortcut&gt;g&lt;/Shortcut&gt;
+        ///		&lt;Query&gt;https://www.google.gr/#q={0}&lt;/Query&gt;
+        ///	&lt;/Engine&gt;
+        ///	&lt;Engine&gt;
+        ///		&lt;Name&gt;Windows Explorer&lt;/Name&gt;
+        ///		&lt;Shortcut&gt;ws&lt;/Shortcut&gt;
+        ///		&lt;Query&gt;search-ms:query={0}&amp;amp;&lt;/Query&gt;
+        ///	&lt;/Engine&gt;
+        ///	&lt;Engine&gt;
+        ///		&lt;Name&gt;Wikipedia&lt;/Name&gt;
+        ///		&lt;Shortcut&gt;w&lt;/Shortcut&gt;
+        ///		&lt;Query&gt;https://en.wikipedia.org/w/index. [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string engines {
+            get {
+                return ResourceManager.GetString("engines", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap search {

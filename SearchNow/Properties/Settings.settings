@@ -1,9 +1,12 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="WikiSearchNow.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SearchNow.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="default_engine" Type="System.String" Scope="User">
       <Value Profile="(Default)">Google</Value>
+    </Setting>
+    <Setting Name="default_definitions_file" Type="System.String" Scope="User">
+      <Value Profile="(Default)">engines.xml</Value>
     </Setting>
   </Settings>
 </SettingsFile>

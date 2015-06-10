@@ -34,5 +34,17 @@ namespace SearchNow.Properties {
                 this["default_engine"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("engines.xml")]
+        public string default_definitions_file {
+            get {
+                return ((string)(this["default_definitions_file"]));
+            }
+            set {
+                this["default_definitions_file"] = value;
+            }
+        }
     }
 }

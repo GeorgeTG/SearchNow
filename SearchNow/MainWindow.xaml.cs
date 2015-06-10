@@ -103,7 +103,7 @@ namespace SearchNow
             this.Visibility = Visibility.Hidden; //Hide window for now
             CenterWindowOnScreen();
 
-            Engines = new SearchEngines("engines.xml");
+            Engines = new SearchEngines();
 
             //Populate enginemenu
             ContextMenu = new ContextMenu();
