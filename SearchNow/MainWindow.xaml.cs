@@ -55,7 +55,7 @@ namespace SearchNow
                 HideWindow();
             } else if ((this.Visibility == Visibility.Visible) && !this.IsActive) {
                 this.Activate();
-                Keyboard.Focus(searchTermTextBox);
+                Keyboard.Focus(searchTextBox);
             } else {
                 ShowWindow();
             }
@@ -72,7 +72,7 @@ namespace SearchNow
             //Get focus to our textbox
             this.Activate();
             this.Focus();
-            Keyboard.Focus(searchTermTextBox);
+            Keyboard.Focus(searchTextBox);
         }
 
         private void HideWindow() {
@@ -114,7 +114,7 @@ namespace SearchNow
             ShowWindow();
         }
 
-        private void SearchTermTextBox_KeyUp(object sender, KeyEventArgs e) {
+        private void SearchTextBox_KeyUp(object sender, KeyEventArgs e) {
             if (e.Key != Key.Enter) {
                 return;
             }
@@ -127,7 +127,7 @@ namespace SearchNow
         }
 
         private void searchButton_Click(object sender, RoutedEventArgs e) {
-            Engines.Search(searchTermTextBox.Text);
+            Engines.Search(searchTextBox.Text);
         }
 
         private void Window_MouseRightButtonUp(object sender, MouseButtonEventArgs e) {

@@ -62,6 +62,9 @@
       <DependentUpon>InformationWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="SearchEngines.cs" />
+    <Compile Include="SearchTextBox.xaml.cs">
+      <DependentUpon>SearchTextBox.xaml</DependentUpon>
+    </Compile>
     <Page Include="InformationWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -80,6 +83,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="SearchTextBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

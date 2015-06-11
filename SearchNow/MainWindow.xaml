@@ -13,13 +13,13 @@
             </Button.Background>
         </Button>
         <Grid>
-            <TextBox  Width="681"  VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="searchTermTextBox" Height="20" Margin="11,10,0,11" KeyUp="SearchTermTextBox_KeyUp"/>
+            <TextBox  Width="681"  VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="searchTextBox" Height="20" Margin="11,10,0,11" KeyUp="SearchTextBox_KeyUp"/>
             <TextBlock IsHitTestVisible="False" Text="Type something to search for here..." VerticalAlignment="Center" HorizontalAlignment="Left"  Foreground="DarkGray" Margin="21,10,0,13">
                 <TextBlock.Style>
                     <Style TargetType="{x:Type TextBlock}">
                         <Setter Property="Visibility" Value="Collapsed"/>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding Text, ElementName=searchTermTextBox}" Value="">
+                            <DataTrigger Binding="{Binding Text, ElementName=searchTextBox}" Value="">
                                 <Setter Property="Visibility" Value="Visible"/>
                             </DataTrigger>
                         </Style.Triggers>

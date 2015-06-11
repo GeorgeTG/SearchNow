@@ -30,11 +30,6 @@ namespace SearchNow {
         private InformationWindow info_window;
 
 
-        public SearchEngines(string file) {
-            info_window = new InformationWindow();
-            LoadDefinitionsFile(file);
-        }
-
         /// <summary>
         /// Initialize with the default file
         /// </summary>
@@ -47,15 +42,17 @@ namespace SearchNow {
             LoadDefinitionsFile(default_file);
         }
 
+        #region EngineDefinitions
+
         private void LoadDefinitionsFile(string file) {
-            ParseEngines(file);
+            ParseEngineDefinitions(file);
             if (definitions_loaded) {
                 LoadDefault();
                 loaded_file = file;
             }
         }
 
-        private void ParseEngines(string file) {
+        private void ParseEngineDefinitions(string file) {
             engines_collection = new List<SearchEngine>();
 
             try {
@@ -70,7 +67,7 @@ namespace SearchNow {
                 engines_collection = query.ToList();
             } catch (Exception ex) {
                 engines_collection = new List<SearchEngine>();
-                InformUser(ex.Message, MessageType.Error);
+                InformUser("Couldn't load definitions file. " + ex.Message, MessageType.Error);
             }
 
             name_from_shortcut = new Dictionary<string, string>();
@@ -88,7 +85,10 @@ namespace SearchNow {
             }
             definitions_loaded = true;
         }
+        #endregion
+      
 
+        #region Query
         private string CheckQueryForCommand(string query) {
             Match match = Regex.Match(query, @"\?c=([a-z A-Z]);");
             if (match.Success) {
@@ -114,7 +114,7 @@ namespace SearchNow {
         private string CheckQueryForConfig(string query) {
             Match match = Regex.Match(query, @"\?l=([^<>:"" /\\\|\?\*]+.xml);");
             if (match.Success) {
-                //load was requested
+                //Loading a new engines definiton file was requested!
                 string text = match.Groups[0].Value;
                 string file = match.Groups[1].Value;
 
@@ -124,6 +124,7 @@ namespace SearchNow {
 
             match = Regex.Match(query, @"\?d=([a-z A-Z]+)\;");
             if (match.Success) {
+                //Defualt engine change requested.
                 string match_text = match.Groups[0].Value;
                 string shortcut = match.Groups[1].Value;
                 if (name_from_shortcut.ContainsKey(shortcut)) {
@@ -136,17 +137,17 @@ namespace SearchNow {
                 }
                 return query.Replace(match_text, "");
             }
-            //No valid config subquery
+            //No valid config subquery detected, return intact
             return query;
         }
 
 
         private string ParseQuery(string query) {
             if (String.IsNullOrEmpty(query))
-                return query;
+                return query; //Nothing to do here
             Match match = Regex.Match(query, @"\?e=([a-z A-Z]+):([\s\S]*);");
             if (match.Success) {
-                //e is specified
+                //Specific engine requested
                 string shortcut = match.Groups[1].Value;
                 string text = match.Groups[2].Value;
                 if (name_from_shortcut.ContainsKey(shortcut)) {
@@ -155,7 +156,7 @@ namespace SearchNow {
                 } else {
                     //Wrong engine shortcut
                     InformUser(String.Format("Specified engine [{0}] not found!" , shortcut), MessageType.Error);
-                    DoSearch(selected_engine, text);
+                    //DoSearch(selected_engine, text);
                     return query;
                 }
             } else {
@@ -164,27 +165,39 @@ namespace SearchNow {
             }
             return query;
         }
+        #endregion
 
         private void DoSearch(string engine, string query) {
             string engine_query = query_from_name[engine];
             string uri;
-            if (engine_query.StartsWith("http")) {
+
+            Uri uri_result;
+            bool is_online = Uri.TryCreate(engine_query, UriKind.Absolute, out uri_result) &&
+                                    (uri_result.Scheme == Uri.UriSchemeHttp || uri_result.Scheme == Uri.UriSchemeHttps);
+            if (is_online) {
+                //This is an online query
                 uri = string.Format(engine_query, HttpUtility.UrlEncode(query));
 
-                //Check if link is valid
-                Ping ping = new Ping();
-                Uri to_check = new Uri(uri);
-                PingReply result = ping.Send(to_check.Host);
-                if (result.Status != IPStatus.Success) {
-                    InformUser("Connection error, or invalid search engine definitions!", MessageType.Warn);
-                } else {
-                    Process.Start(uri);
+                try {
+                    //Check if link is valid
+                    Ping ping = new Ping();
+                    PingReply result = ping.Send(uri_result.Host); //This throws an exception if no internet
+                    if (result.Status != IPStatus.Success) {
+                        InformUser("Connection error, or invalid search engine definitions!", MessageType.Error);
+                    } else {
+                        Process.Start(uri);
+                    }
+                } catch (Exception) {
+                    InformUser("Connection error. You probably can't connect to the internet.", MessageType.Error);
                 }
             } else {
                 uri= string.Format(engine_query, query);
                 Process.Start(uri);
-            }
-           
+            }         
+        }
+
+        private void InformUser(string info, MessageType type) {
+            info_window.AddMessage(new InformationMessage(info, type));
         }
 
         private void LoadDefault() {
@@ -201,12 +214,10 @@ namespace SearchNow {
             }
         }
 
-        private void InformUser(string info, MessageType type) {
-            info_window.AddMessage(new InformationMessage(info, type));
-        }
 
         /// <summary>
-        /// Performs a search based on given query.
+        /// Performs a search based on given query. Returns the new query string
+        /// with modifications (if needed).
         /// </summary>
         /// <param name="query"></param>
         public string Search(string query) {
@@ -218,7 +229,6 @@ namespace SearchNow {
                 return CheckQueryForConfig(CheckQueryForCommand(query));
             }
         }
-
 
         public bool SetDefault(string engine) {
             if (query_from_name.ContainsKey(engine)) {
