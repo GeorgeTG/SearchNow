@@ -16,38 +16,6 @@
         <Button x:Name="exitButton" Content="X" HorizontalAlignment="Left" Margin="270,0,0,0" VerticalAlignment="Top" Width="27"  Height="25" Click="exitButton_Click" ForceCursor="True" Background="#FF252424" BorderBrush="White" Foreground="White" Style="{DynamicResource FlatButtonBaseStyle}"/>
     </Grid>
     <Window.Resources>
-        <Style x:Key="FlatButtonBaseStyle" TargetType="{x:Type Button}">
-            <Setter Property="Width" Value="60" />
-            <Setter Property="Height" Value="20" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="BorderBrush" Value="Gray" />
-            <Setter Property="Background" Value="Transparent" />
-
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border Name="Border"
-                        Background="{TemplateBinding Background}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        BorderBrush="{TemplateBinding BorderBrush}">
-
-                            <ContentPresenter Name="Content"
-                                      Content="{TemplateBinding Content}" 
-                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                      TextBlock.FontFamily="{TemplateBinding FontFamily}" 
-                                      TextBlock.FontSize="{TemplateBinding FontSize}" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="BorderBrush" Value="Red" />
-                                <Setter TargetName="Content" Property="TextElement.Foreground" Value="Red"/>
-                                <Setter Property="Opacity" Value="1" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <ResourceDictionary Source="Extra.xaml" />
     </Window.Resources>
 </Window>

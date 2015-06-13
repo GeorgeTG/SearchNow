@@ -33,20 +33,20 @@ namespace SearchNow
             InitializeComponent();
 
             show_animation = new DoubleAnimation() {
-                From = 0,
-                To = 40,
-                Duration = TimeSpan.FromMilliseconds(500)
-            };
-            hide_animation = new DoubleAnimation() {
-                From = 40,
+                From = -40,
                 To = 0,
                 Duration = TimeSpan.FromMilliseconds(500)
             };
+            hide_animation = new DoubleAnimation() {
+                From = 0,
+                To = -40,
+                Duration = TimeSpan.FromMilliseconds(500)
+            };
             Storyboard.SetTarget(show_animation, this);
-            Storyboard.SetTargetProperty(show_animation, new PropertyPath(Window.HeightProperty));
+            Storyboard.SetTargetProperty(show_animation, new PropertyPath(Window.TopProperty));
 
             Storyboard.SetTarget(hide_animation, this);
-            Storyboard.SetTargetProperty(hide_animation, new PropertyPath(Window.HeightProperty));
+            Storyboard.SetTargetProperty(hide_animation, new PropertyPath(Window.TopProperty));
             hot_key = new HotKey(Key.F, KeyModifier.Alt | KeyModifier.Ctrl, OnHotKeyPressed);
         }
 
@@ -87,7 +87,7 @@ namespace SearchNow
         private void CenterWindowOnScreen() {
             double screenWidth = SystemParameters.PrimaryScreenWidth;
             this.Left = (screenWidth / 2) - (this.Width / 2);
-            this.Top = 0;
+            this.Top = -40;
         }
         #endregion
 
@@ -118,10 +118,10 @@ namespace SearchNow
             if (e.Key != Key.Enter) {
                 return;
             }
-            TextBox text_box = (TextBox)sender;
+            SearchTextBox text_box = (SearchTextBox)sender;
             string input = text_box.Text;
 
-            text_box.Text = Engines.Search(input);
+            Engines.Search(input);
 
             HideWindow();
         }

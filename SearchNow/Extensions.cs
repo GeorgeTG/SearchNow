@@ -24,5 +24,11 @@ namespace SearchNow {
                 return (ImageSource)System.Windows.Media.Imaging.BitmapFrame.Create(iconStream);
             }
         }
+
+
+        public static bool IsWithinRange(this int integer, int bottom, int top) {
+            return (integer >= bottom && integer < top);
+        }
+
     }
 }

@@ -1,32 +1,22 @@
-﻿<Window x:Class="SearchNow.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WikiSearchNow"
+        xmlns:local1="clr-namespace:SearchNow" x:Class="SearchNow.MainWindow"
         mc:Ignorable="d"
-        Title="SearchWindow" Height="40" Width="744" Loaded="Window_Loaded" Topmost="True" Background="#FF252424" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" MouseRightButtonUp="Window_MouseRightButtonUp" ToolTip="Right click to select default seach engine." ShowInTaskbar="False">
-    <Grid>
-        <Button x:Name="searchButton" Content="&gt;" HorizontalAlignment="Left" Margin="701,8,0,0" VerticalAlignment="Top" Width="32" Height="23" BorderBrush="{x:Null}" Foreground="{x:Null}" Click="searchButton_Click">
+        Title="SearchWindow" Height="40" Width="741" Loaded="Window_Loaded" Topmost="True" Background="#FF272727" ResizeMode="NoResize" MouseRightButtonUp="Window_MouseRightButtonUp" ToolTip="Right click to select default seach engine." ShowInTaskbar="False" WindowStyle="None">
+    <Grid HorizontalAlignment="Center">
+
+        <Button x:Name="searchButton" Content="" HorizontalAlignment="Left" Margin="701,8,0,0" VerticalAlignment="Top" Width="32" Height="23" BorderBrush="{x:Null}" Foreground="{x:Null}" Click="searchButton_Click" Style="{DynamicResource FlatButtonBaseStyle}">
             <Button.Background>
                 <ImageBrush ImageSource="pack://application:,,,/search.png" Stretch="Uniform"/>
             </Button.Background>
         </Button>
-        <Grid>
-            <TextBox  Width="681"  VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="searchTextBox" Height="20" Margin="11,10,0,11" KeyUp="SearchTextBox_KeyUp"/>
-            <TextBlock IsHitTestVisible="False" Text="Type something to search for here..." VerticalAlignment="Center" HorizontalAlignment="Left"  Foreground="DarkGray" Margin="21,10,0,13">
-                <TextBlock.Style>
-                    <Style TargetType="{x:Type TextBlock}">
-                        <Setter Property="Visibility" Value="Collapsed"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Text, ElementName=searchTextBox}" Value="">
-                                <Setter Property="Visibility" Value="Visible"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
-        </Grid>
-
+        <local1:SearchTextBox x:Name="searchTextBox" HorizontalAlignment="Left" Margin="10,8,0,0" VerticalAlignment="Top" Width="686" KeyUp="SearchTextBox_KeyUp"/>
     </Grid>
+    <Window.Resources>
+        <ResourceDictionary Source="Extra.xaml" />
+    </Window.Resources>
 </Window>
