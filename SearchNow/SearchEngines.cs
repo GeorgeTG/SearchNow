@@ -22,19 +22,26 @@ namespace SearchNow {
         public string Query;
     }
 
+    public delegate void MessageHandler(object sender, MessageEventArgs e);
+
     class SearchEngines {
         private List<SearchEngine> engines_collection;
         private Dictionary<string, string> name_from_shortcut, query_from_name;
         private string selected_engine, loaded_file;
         private bool definitions_loaded = false;
-        private InformationWindow info_window;
 
+        public event MessageHandler MessageRecieved;
 
+        protected virtual void OnMessage(MessageEventArgs e) {
+            if (MessageRecieved != null) {
+                MessageRecieved(this, e);
+            }
+        }
+     
         /// <summary>
         /// Initialize with the default file
         /// </summary>
         public SearchEngines() {
-            info_window = new InformationWindow();
             string default_file = (string)Properties.Settings.Default["default_definitions_file"];
             if (!File.Exists(default_file)) {
                 File.WriteAllText(default_file, Properties.Resources.engines); //extract the default file.
@@ -84,29 +91,44 @@ namespace SearchNow {
                 name_from_shortcut.Add(engine.Shortcut, engine.Name);
             }
             definitions_loaded = true;
+            InformUser(String.Format("Loaded {0} engine definitions!", engines_collection.Count), MessageType.Info);
         }
         #endregion
       
 
         #region Query
         private string CheckQueryForCommand(string query) {
-            Match match = Regex.Match(query, @"\?c=([a-z A-Z]);");
+            Match match = Regex.Match(query, @"\?c=([a-z A-Z]+);");
             if (match.Success) {
                 string match_text = match.Groups[0].Value;
                 string command = match.Groups[1].Value;
 
                 query = query.Replace(match_text, "");
-                if (command.Equals("x")) {
-                    Application.Current.Shutdown();
-                } else if (command.Equals("r")) {
-                    if (!String.IsNullOrEmpty(loaded_file)) {
-                        //We have a stored loaded file. Try to reload
-                        LoadDefinitionsFile(loaded_file);
-                    } else {
-                        //No file to reload
-                        InformUser("No file loaded. Cannot reload.", MessageType.Error);
-                    }
-                }         
+                switch (command) {
+                    case "exit":
+                        Action exit = () => {
+                            Application.Current.Shutdown();
+                        };
+                        exit.DoAfter(TimeSpan.FromMilliseconds(500));
+                        return String.Empty;
+                    case "reload":
+                        if (!String.IsNullOrEmpty(loaded_file)) {
+                            //We have a stored loaded file. Try to reload
+                            LoadDefinitionsFile(loaded_file);
+                        } else {
+                            //No file to reload
+                            InformUser("No file loaded. Cannot reload.", MessageType.Error);
+                        }
+                        break;
+                    case "edit":
+                        if (File.Exists(loaded_file)) {
+                            Process.Start(loaded_file);
+                        }
+                        break;
+                    case "showlog":
+                        SendCommand(MessageCommand.ShowLog);
+                        break;
+                }       
             }
             return query;
         }
@@ -197,7 +219,11 @@ namespace SearchNow {
         }
 
         private void InformUser(string info, MessageType type) {
-            info_window.AddMessage(new InformationMessage(info, type));
+            OnMessage(new MessageEventArgs(new InformationMessage(info, type)));
+        }
+
+        private void SendCommand(MessageCommand command) {
+            OnMessage(new MessageEventArgs(new InformationMessage(command)));
         }
 
         private void LoadDefault() {
@@ -247,5 +273,41 @@ namespace SearchNow {
             return query_from_name.Keys.ToList();
         }
 
+    }
+
+    public enum MessageType {
+        Error,
+        Warn,
+        Info
+    }
+
+    public enum MessageCommand {
+        ShowLog
+    }
+
+    public class InformationMessage {
+        public string Text { get; private set; }
+        public MessageType Type { get; private set; }
+
+        public bool IsCommand { get; private set; }
+        public MessageCommand Command { get; private set; }
+
+        public InformationMessage(string Text, MessageType Type) {
+            this.Text = Text;
+            this.Type = Type;
+            this.IsCommand = false;
+        }
+
+        public InformationMessage(MessageCommand Command) {
+            this.IsCommand = true;
+            this.Command = Command;
+        }
+    }
+
+    public class MessageEventArgs : EventArgs {
+        public InformationMessage Message { get; private set; }
+        public MessageEventArgs(InformationMessage Message) {
+            this.Message = Message;
+        }
     }
 }

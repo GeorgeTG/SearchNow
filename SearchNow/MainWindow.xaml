@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:WikiSearchNow"
         xmlns:local1="clr-namespace:SearchNow" x:Class="SearchNow.MainWindow"
         mc:Ignorable="d"
-        Title="SearchWindow" Height="40" Width="741" Loaded="Window_Loaded" Topmost="True" Background="#FF272727" ResizeMode="NoResize" MouseRightButtonUp="Window_MouseRightButtonUp" ToolTip="Right click to select default seach engine." ShowInTaskbar="False" WindowStyle="None">
+        Title="SearchWindow" Height="40" Width="741" Loaded="Window_Loaded" Topmost="True" Background="#FF272727" ResizeMode="NoResize" MouseRightButtonUp="Window_MouseRightButtonUp" ToolTip="Right click to select default seach engine." ShowInTaskbar="False" WindowStyle="None" MouseDoubleClick="Window_MouseDoubleClick">
     <Grid HorizontalAlignment="Center">
 
         <Button x:Name="searchButton" Content="" HorizontalAlignment="Left" Margin="701,8,0,0" VerticalAlignment="Top" Width="32" Height="23" BorderBrush="{x:Null}" Foreground="{x:Null}" Click="searchButton_Click" Style="{DynamicResource FlatButtonBaseStyle}">
@@ -15,6 +15,7 @@
             </Button.Background>
         </Button>
         <local1:SearchTextBox x:Name="searchTextBox" HorizontalAlignment="Left" Margin="10,8,0,0" VerticalAlignment="Top" Width="686" KeyUp="SearchTextBox_KeyUp"/>
+        <TextBlock x:Name="logBlock" HorizontalAlignment="Left" Margin="10,49,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="120" Width="686" Foreground="White"/>
     </Grid>
     <Window.Resources>
         <ResourceDictionary Source="Extra.xaml" />
