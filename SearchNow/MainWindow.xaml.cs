@@ -28,7 +28,7 @@ namespace SearchNow
         DoubleAnimation show_animation, hide_animation;
         HotKey hot_key;
         SearchEngines Engines;
-        Flag log_vissible = false, hide_pending = true;
+        Flag log_vissible = false, hide_pending = true, dont_hide = false;
 
         public MainWindow(){
             InitializeComponent();
@@ -56,13 +56,13 @@ namespace SearchNow
         }
 
         private void LogAppend(string message, MessageType type) {
-            logBlock.Inlines.Add(DateTime.Now.ToString("MMM ddd d HH: mm > "));
+            logBlock.Inlines.Add(new Run(DateTime.Now.ToString("[MMM ddd d HH: mm]")) { FontWeight = FontWeights.Bold});
             switch (type) {
                 case MessageType.Error:
                     logBlock.Inlines.Add(new Run("[Error] ") { Foreground = Brushes.Red });
                     break;
                 case MessageType.Info:
-                    logBlock.Inlines.Add(new Run("[Info] ") { Foreground = Brushes.Blue });
+                    logBlock.Inlines.Add(new Run("[Info] ") { Foreground = Brushes.LightBlue });
                     break;
                 case MessageType.Warn:
                     logBlock.Inlines.Add(new Run("[Warn] ") { Foreground = Brushes.Yellow });
@@ -76,6 +76,9 @@ namespace SearchNow
                 switch (e.Message.Command) {
                     case MessageCommand.ShowLog:
                         ShowLog();
+                        break;
+                    case MessageCommand.DontHide:
+                        this.dont_hide.Set();
                         break;
                 }
             } else {
@@ -92,6 +95,7 @@ namespace SearchNow
 
         void OnHotKeyPressed(HotKey hotKey) {
             if  ((this.Visibility == Visibility.Visible) && this.IsActive) {
+                HideLog();
                 HideWindow();
             } else if ((this.Visibility == Visibility.Visible) && !this.IsActive) {
                 this.Activate();
@@ -119,6 +123,9 @@ namespace SearchNow
             if (log_vissible) {
                 hide_pending = true;
             } else {
+                if (dont_hide.IsSetToggle()) {
+                    return; //Consume don't hide flag
+                }
                 Storyboard sb = new Storyboard();
                 sb.Children.Add(this.hide_animation);
 

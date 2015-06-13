@@ -45,6 +45,7 @@ namespace SearchNow {
             string default_file = (string)Properties.Settings.Default["default_definitions_file"];
             if (!File.Exists(default_file)) {
                 File.WriteAllText(default_file, Properties.Resources.engines); //extract the default file.
+                InformUser("Default file extracted.", MessageType.Info);
             }
             LoadDefinitionsFile(default_file);
         }
@@ -98,12 +99,12 @@ namespace SearchNow {
 
         #region Query
         private string CheckQueryForCommand(string query) {
-            Match match = Regex.Match(query, @"\?c=([a-z A-Z]+);");
+            Match match = Regex.Match(query, @"\?cmd=([a-z A-Z]+);");
             if (match.Success) {
                 string match_text = match.Groups[0].Value;
                 string command = match.Groups[1].Value;
 
-                query = query.Replace(match_text, "");
+                query = CheckQueryForCommand(query.Replace(match_text, ""));
                 switch (command) {
                     case "exit":
                         Action exit = () => {
@@ -123,10 +124,14 @@ namespace SearchNow {
                     case "edit":
                         if (File.Exists(loaded_file)) {
                             Process.Start(loaded_file);
+                            InformUser("You should probably issue a reload command when you are done editing.", MessageType.Warn);
                         }
                         break;
                     case "showlog":
                         SendCommand(MessageCommand.ShowLog);
+                        break;
+                    default:
+                        InformUser(String.Format("Bad command: [{0}]", command), MessageType.Error);
                         break;
                 }       
             }
@@ -134,32 +139,59 @@ namespace SearchNow {
         }
 
         private string CheckQueryForConfig(string query) {
-            Match match = Regex.Match(query, @"\?l=([^<>:"" /\\\|\?\*]+.xml);");
+            Match match = Regex.Match(query, @"\?cfg:(\w+)=([^;]+);");
             if (match.Success) {
-                //Loading a new engines definiton file was requested!
+                //config given
                 string text = match.Groups[0].Value;
-                string file = match.Groups[1].Value;
+                string config = match.Groups[1].Value;
+                string arg = match.Groups[2].Value;
 
-                LoadDefinitionsFile(file);
-                query = query.Replace(text, "");
+                query = CheckQueryForConfig(query.Replace(text, "")); //Remove our match and check for more
+                switch (config) {
+                    case "default":
+                        if (name_from_shortcut.ContainsKey(arg)) {
+                            //Shortcut is assigned to an engine
+                            SetDefault(name_from_shortcut[arg]);
+                            InformUser(String.Format("Default engine changed to: [{0}]", name_from_shortcut[arg]), MessageType.Info);
+                        } else if (query_from_name.ContainsKey(arg)) {
+                            //Whole name given
+                            SetDefault(arg);
+                            InformUser(String.Format("Default engine changed to: [{0}]", arg), MessageType.Info);
+                        } else {
+                            //Invalid shortcut!!
+                            InformUser(String.Format("Invalid argument [{0}]. Cannot set default engine.", arg), MessageType.Error);
+                        }
+                        break;
+                    case "definitions":
+                        if (Regex.IsMatch(arg, @"[^<>:"" /\\\|\?\*]+\.xml$")) {
+                            LoadDefinitionsFile(arg);
+                        } else {
+                            InformUser(String.Format("Bad argument [{0}]. Was expecting an .xml file!", arg), MessageType.Error);
+                        }
+                        break;
+                }             
             }
-
-            match = Regex.Match(query, @"\?d=([a-z A-Z]+)\;");
+            match = Regex.Match(query, @"\?pcfg:(\w+);");
             if (match.Success) {
-                //Defualt engine change requested.
-                string match_text = match.Groups[0].Value;
-                string shortcut = match.Groups[1].Value;
-                if (name_from_shortcut.ContainsKey(shortcut)) {
-                    //Shortcut is assigned to an engine
-                    SetDefault(name_from_shortcut[shortcut]);
-                    InformUser("Default engine changed.", MessageType.Info);
-                } else {
-                    //Invalid shortcut!!
-                    InformUser("Invalid shortcut! Cannot set default engine.", MessageType.Error);
+                string text = match.Groups[0].Value;
+                string config = match.Groups[1].Value;
+                string info;
+
+                query = CheckQueryForConfig(query.Replace(text, ""));
+                switch (config) {
+                    case "default":
+                        info = String.Format("Default engine is: [{0}]", selected_engine);
+                        break;
+                    case "definitions":
+                        info = String.Format("Currently loaded definitions file is: [{0}]", loaded_file);
+                        break;
+                    default:
+                        InformUser(String.Format("Bad config option: [{0}]", config), MessageType.Error);
+                        return query;
                 }
-                return query.Replace(match_text, "");
+
+                InformUser(info, MessageType.Info);
             }
-            //No valid config subquery detected, return intact
             return query;
         }
 
@@ -167,11 +199,14 @@ namespace SearchNow {
         private string ParseQuery(string query) {
             if (String.IsNullOrEmpty(query))
                 return query; //Nothing to do here
-            Match match = Regex.Match(query, @"\?e=([a-z A-Z]+):([\s\S]*);");
+            Match match = Regex.Match(query, @"\?e =([a-z A-Z]+):([\s\S]*);");
             if (match.Success) {
                 //Specific engine requested
+                string match_text = match.Groups[0].Value;
                 string shortcut = match.Groups[1].Value;
                 string text = match.Groups[2].Value;
+
+                query = ParseQuery(query.Replace(match_text, ""));
                 if (name_from_shortcut.ContainsKey(shortcut)) {
                     //Engine with this shortcut exists
                     DoSearch(name_from_shortcut[shortcut], text);
@@ -179,11 +214,11 @@ namespace SearchNow {
                     //Wrong engine shortcut
                     InformUser(String.Format("Specified engine [{0}] not found!" , shortcut), MessageType.Error);
                     //DoSearch(selected_engine, text);
-                    return query;
                 }
             } else {
                 //Normal input
                 DoSearch(selected_engine, query);
+                query = String.Empty;
             }
             return query;
         }
@@ -246,13 +281,12 @@ namespace SearchNow {
         /// with modifications (if needed).
         /// </summary>
         /// <param name="query"></param>
-        public string Search(string query) {
-            if (definitions_loaded) {
-                return ParseQuery(CheckQueryForConfig(CheckQueryForCommand(query)));
-            } else {
-                InformUser("There aren't any search engine definitions loaded.\n" +
-                            "Consider loading an xml file using ?r=file.xml;", MessageType.Warn);
-                return CheckQueryForConfig(CheckQueryForCommand(query));
+        public void Search(string query) {
+            string for_search = CheckQueryForConfig(CheckQueryForCommand(query));
+            string after_search = ParseQuery(for_search);
+            if ((after_search == for_search) && (query != for_search)) {
+                //we had config/command but not any search
+                SendCommand(MessageCommand.DontHide);
             }
         }
 
@@ -282,7 +316,8 @@ namespace SearchNow {
     }
 
     public enum MessageCommand {
-        ShowLog
+        ShowLog,
+        DontHide
     }
 
     public class InformationMessage {
