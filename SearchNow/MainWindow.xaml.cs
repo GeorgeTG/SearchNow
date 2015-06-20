@@ -28,7 +28,7 @@ namespace SearchNow
         DoubleAnimation show_animation, hide_animation;
         HotKey hot_key;
         SearchEngines Engines;
-        Flag log_vissible = false, hide_pending = true, dont_hide = false;
+        Flag log_vissible = false, hide_pending = true;
 
         public MainWindow(){
             InitializeComponent();
@@ -53,10 +53,11 @@ namespace SearchNow
 
             Engines = new SearchEngines();
             Engines.MessageRecieved += Engines_MessageRecieved;
+            Engines.Init();
         }
 
         private void LogAppend(string message, MessageType type) {
-            logBlock.Inlines.Add(new Run(DateTime.Now.ToString("[MMM ddd d HH: mm]")) { FontWeight = FontWeights.Bold});
+            logBlock.Inlines.Add(new Run(DateTime.Now.ToString("[ddd - MMM d - HH: mm]")) { FontWeight = FontWeights.Bold});
             switch (type) {
                 case MessageType.Error:
                     logBlock.Inlines.Add(new Run("[Error] ") { Foreground = Brushes.Red });
@@ -77,8 +78,12 @@ namespace SearchNow
                     case MessageCommand.ShowLog:
                         ShowLog();
                         break;
-                    case MessageCommand.DontHide:
-                        this.dont_hide.Set();
+                    case MessageCommand.HideLog:
+                        HideLog();
+                        break;
+                    case MessageCommand.Hide:
+                        HideLog();
+                        HideWindow();
                         break;
                 }
             } else {
@@ -123,9 +128,6 @@ namespace SearchNow
             if (log_vissible) {
                 hide_pending = true;
             } else {
-                if (dont_hide.IsSetToggle()) {
-                    return; //Consume don't hide flag
-                }
                 Storyboard sb = new Storyboard();
                 sb.Children.Add(this.hide_animation);
 

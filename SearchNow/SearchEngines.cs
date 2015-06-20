@@ -42,6 +42,10 @@ namespace SearchNow {
         /// Initialize with the default file
         /// </summary>
         public SearchEngines() {
+           
+        }
+
+        public void Init() {
             string default_file = (string)Properties.Settings.Default["default_definitions_file"];
             if (!File.Exists(default_file)) {
                 File.WriteAllText(default_file, Properties.Resources.engines); //extract the default file.
@@ -88,8 +92,20 @@ namespace SearchNow {
             }
 
             foreach (SearchEngine engine in engines_collection) {
-                query_from_name.Add(engine.Name, engine.Query);
-                name_from_shortcut.Add(engine.Shortcut, engine.Name);
+                if (!query_from_name.ContainsKey(engine.Name)) {
+                    query_from_name.Add(engine.Name, engine.Query);
+                } else {
+                    InformUser(String.Format("Duplicate name entry: [{0}]", engine.Name), MessageType.Error);
+                    definitions_loaded = false;
+                    return;
+                }
+                if (!name_from_shortcut.ContainsKey(engine.Shortcut)) {
+                    name_from_shortcut.Add(engine.Shortcut, engine.Name);
+                } else {
+                    InformUser(String.Format("Duplicate shortcut entry: [{0}]", engine.Shortcut), MessageType.Error);
+                    definitions_loaded = false;
+                    return;
+                }
             }
             definitions_loaded = true;
             InformUser(String.Format("Loaded {0} engine definitions!", engines_collection.Count), MessageType.Info);
@@ -127,8 +143,23 @@ namespace SearchNow {
                             InformUser("You should probably issue a reload command when you are done editing.", MessageType.Warn);
                         }
                         break;
+                    case "pengines":
+                        if (definitions_loaded) {
+                            string avail = "";
+                            name_from_shortcut.Keys.Enumerate(
+                                (key, i) => {
+                                    avail += String.Format("{0}. Name: [{1}], Shortcut: [{2}]\n",i, name_from_shortcut[key], key);
+                                });
+                            InformUser(avail, MessageType.Info);
+                        } else {
+                            InformUser("Engines definitions not loaded. Cannot display available engines.", MessageType.Error);
+                        }
+                        break;
                     case "showlog":
                         SendCommand(MessageCommand.ShowLog);
+                        break;
+                    case "hidelog":
+                        SendCommand(MessageCommand.HideLog);
                         break;
                     default:
                         InformUser(String.Format("Bad command: [{0}]", command), MessageType.Error);
@@ -169,6 +200,9 @@ namespace SearchNow {
                             InformUser(String.Format("Bad argument [{0}]. Was expecting an .xml file!", arg), MessageType.Error);
                         }
                         break;
+                    default:
+                        InformUser(String.Format("Bad config option [{0}]!", config), MessageType.Error);
+                        break;
                 }             
             }
             match = Regex.Match(query, @"\?pcfg:(\w+);");
@@ -199,7 +233,7 @@ namespace SearchNow {
         private string ParseQuery(string query) {
             if (String.IsNullOrEmpty(query))
                 return query; //Nothing to do here
-            Match match = Regex.Match(query, @"\?e =([a-z A-Z]+):([\s\S]*);");
+            Match match = Regex.Match(query, @"\?e:([a-z A-Z]+)=([\s\S]*);");
             if (match.Success) {
                 //Specific engine requested
                 string match_text = match.Groups[0].Value;
@@ -282,12 +316,19 @@ namespace SearchNow {
         /// </summary>
         /// <param name="query"></param>
         public void Search(string query) {
-            string for_search = CheckQueryForConfig(CheckQueryForCommand(query));
-            string after_search = ParseQuery(for_search);
-            if ((after_search == for_search) && (query != for_search)) {
-                //we had config/command but not any search
-                SendCommand(MessageCommand.DontHide);
+            if (query.StartsWith("?help;")) {
+                Process.Start("https://github.com/GeorgeTG/SearchNow#usage");
+                return;
             }
+            string for_search = CheckQueryForConfig(CheckQueryForCommand(query));
+            if (definitions_loaded) {
+                string after_search = ParseQuery(for_search);
+                if ((after_search == for_search) && (query != for_search)) {
+                    //we had config/command but not any search
+                }
+            } else if (for_search != String.Empty) {
+                InformUser("Search attempted with no definitions loaded!", MessageType.Warn);
+            }        
         }
 
         public bool SetDefault(string engine) {
@@ -317,7 +358,8 @@ namespace SearchNow {
 
     public enum MessageCommand {
         ShowLog,
-        DontHide
+        HideLog,
+        Hide
     }
 
     public class InformationMessage {

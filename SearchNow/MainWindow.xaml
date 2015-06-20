@@ -15,7 +15,7 @@
             </Button.Background>
         </Button>
         <local1:SearchTextBox x:Name="searchTextBox" HorizontalAlignment="Left" Margin="10,8,0,0" VerticalAlignment="Top" Width="686" KeyUp="SearchTextBox_KeyUp"/>
-        <TextBlock x:Name="logBlock" HorizontalAlignment="Left" Margin="10,49,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="120" Width="686" Foreground="White"/>
+        <TextBlock x:Name="logBlock" HorizontalAlignment="Left" Margin="10,49,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="120" Width="686" Foreground="White" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"/>
     </Grid>
     <Window.Resources>
         <ResourceDictionary Source="Extra.xaml" />
