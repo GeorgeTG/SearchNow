@@ -233,7 +233,7 @@ namespace SearchNow {
         private string ParseQuery(string query) {
             if (String.IsNullOrEmpty(query))
                 return query; //Nothing to do here
-            Match match = Regex.Match(query, @"\?e:([a-z A-Z]+)=([\s\S]*);");
+            Match match = Regex.Match(query, @"\?e:([a-z A-Z]+)=([\s\S]*)");
             if (match.Success) {
                 //Specific engine requested
                 string match_text = match.Groups[0].Value;
